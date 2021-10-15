@@ -18,11 +18,11 @@
 #define SUB(pos)\
     hand -= memory[pos]
 
-#define BUMPI()\
-    hand++
+#define BUMPI(pos)\
+    hand = ++memory[pos]
 
-#define BUMPD()\
-    hand--
+#define BUMPD(pos)\
+    hand = --memory[pos]
 
 #define IF0(label)\
     if (hand == 0) goto label
