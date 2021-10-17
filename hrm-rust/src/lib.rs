@@ -95,6 +95,18 @@ impl Context {
         self.hand = Some(self.hand.clone().unwrap() - self.memory[pos].clone().unwrap());
         self
     }
+
+    pub fn incr(&mut self, pos: usize) -> &mut Self {
+        self.hand = Some(self.memory[pos].clone().unwrap() + Tile::Num(1));
+        self.memory[pos] = self.hand.clone();
+        self
+    }
+
+    pub fn decr(&mut self, pos: usize) -> &mut Self {
+        self.hand = Some(self.memory[pos].clone().unwrap() + Tile::Num(-1));
+        self.memory[pos] = self.hand.clone();
+        self
+    }
 }
 
 #[test]
@@ -152,4 +164,28 @@ fn test_sub() {
     assert_eq!(context.hand, Some(Tile::Num(1)));
     context.sub(5);
     assert_eq!(context.hand, Some(Tile::Num(-2)));
+}
+
+#[test]
+fn test_incr() {
+    let mut context = Context::new(&[Tile::Num(3), Tile::Num(14)], 6);
+    context.inbox();
+    context.copyto(5);
+    context.inbox();
+    assert_eq!(context.hand, Some(Tile::Num(14)));
+    context.incr(5);
+    assert_eq!(context.hand, Some(Tile::Num(4)));
+    assert_eq!(context.memory[5], Some(Tile::Num(4)));
+}
+
+#[test]
+fn test_decr() {
+    let mut context = Context::new(&[Tile::Num(3), Tile::Num(14)], 6);
+    context.inbox();
+    context.copyto(5);
+    context.inbox();
+    assert_eq!(context.hand, Some(Tile::Num(14)));
+    context.decr(5);
+    assert_eq!(context.hand, Some(Tile::Num(2)));
+    assert_eq!(context.memory[5], Some(Tile::Num(2)));
 }
