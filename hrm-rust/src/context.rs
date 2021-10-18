@@ -55,7 +55,10 @@ impl std::ops::Sub for Tile {
                 Tile::Num(num2) => Tile::Num(num - num2),
                 _ => unimplemented!(),
             },
-            _ => unimplemented!(),
+            Tile::Char(num) => match tile {
+                Tile::Char(num2) => Tile::Num(num as i32 - num2 as i32),
+                _ => unimplemented!(),
+            },
         }
     }
 }

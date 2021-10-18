@@ -23,6 +23,18 @@ pub enum Expression<'a> {
 }
 
 impl<'a> Expression<'a>  {
+    fn print_debug(&self, context: &Context) {
+        match *self {
+            Expression::CopyFromPointer(s) => { println!("pointer to {:?}", context.memory[s]); },
+            Expression::CopyToPointer(s) => { println!("pointer to {:?}", context.memory[s]); },
+            Expression::IncrPointer(s) => { println!("pointer to {:?}", context.memory[s]); },
+            Expression::DecrPointer(s) => { println!("pointer to {:?}", context.memory[s]); },
+            Expression::AddPointer(s) => { println!("pointer to {:?}", context.memory[s]); },
+            Expression::SubPointer(s) => { println!("pointer to {:?}", context.memory[s]); },
+            _ => {}
+        }
+    }
+
     fn run(&self, runner: &mut Runner) -> bool {
         match *self {
             Expression::Inbox =>{
@@ -84,6 +96,7 @@ impl<'a> Runner<'a> {
             if debug {
                 // TODO: use log lib
                 println!("running statement {:?}, hand has: {:?}", self.statements[self.pos], self.context.hand);
+                self.statements[self.pos].print_debug(&self.context);
             }
             if self.statements[self.pos].clone().run(&mut self) {
                 break
