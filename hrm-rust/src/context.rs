@@ -5,6 +5,12 @@ pub enum Tile {
 }
 
 impl Tile {
+    pub fn is_num(&self) -> bool {
+        match self {
+            Tile::Num(_) => true,
+            _ => false,
+        }
+    }
     pub fn num(&self) -> i32 {
         match self {
             Tile::Num(num) => *num,
@@ -75,6 +81,15 @@ impl Context {
         }
     }
 
+    pub fn new_with_memory(t: &[Tile], memory: Vec<Option<Tile>>) -> Context {
+        Context {
+            inbox_queue: t.to_vec(),
+            outbox_line: vec![],
+            memory,
+            hand: None,
+        }
+    }
+
     pub fn inbox(&mut self) -> &mut Self {
         if self.inbox_queue.len() == 0 {
             self.hand = None
@@ -116,6 +131,44 @@ impl Context {
     }
 
     pub fn decr(&mut self, pos: usize) -> &mut Self {
+        self.hand = Some(self.memory[pos].clone().unwrap() + Tile::Num(-1));
+        self.memory[pos] = self.hand.clone();
+        self
+    }
+
+    pub fn copyfromp(&mut self, ppos: usize) -> &mut Self {
+        let pos = self.memory[ppos].as_ref().expect("empty tile pointer").num() as usize;
+        self.hand = self.memory[pos].clone();
+        self
+    }
+
+    pub fn copytop(&mut self, ppos: usize) -> &mut Self {
+        let pos = self.memory[ppos].as_ref().expect("empty tile pointer").num() as usize;
+        self.memory[pos] = self.hand.clone();
+        self
+    }
+
+    pub fn addp(&mut self, ppos: usize) -> &mut Self {
+        let pos = self.memory[ppos].as_ref().expect("empty tile pointer").num() as usize;
+        self.hand = Some(self.hand.clone().unwrap() + self.memory[pos].clone().unwrap());
+        self
+    }
+
+    pub fn subp(&mut self, ppos: usize) -> &mut Self {
+        let pos = self.memory[ppos].as_ref().expect("empty tile pointer").num() as usize;
+        self.hand = Some(self.hand.clone().unwrap() - self.memory[pos].clone().unwrap());
+        self
+    }
+
+    pub fn incrp(&mut self, ppos: usize) -> &mut Self {
+        let pos = self.memory[ppos].as_ref().expect("empty tile pointer").num() as usize;
+        self.hand = Some(self.memory[pos].clone().unwrap() + Tile::Num(1));
+        self.memory[pos] = self.hand.clone();
+        self
+    }
+
+    pub fn decrp(&mut self, ppos: usize) -> &mut Self {
+        let pos = self.memory[ppos].as_ref().expect("empty tile pointer").num() as usize;
         self.hand = Some(self.memory[pos].clone().unwrap() + Tile::Num(-1));
         self.memory[pos] = self.hand.clone();
         self
@@ -201,4 +254,42 @@ fn test_decr() {
     context.decr(5);
     assert_eq!(context.hand, Some(Tile::Num(2)));
     assert_eq!(context.memory[5], Some(Tile::Num(2)));
+}
+
+#[test]
+fn test_copyfromp() {
+    let mut context = Context::new(&[], 6);
+    context.memory[3] = Some(Tile::Num(0));
+    context.memory[0] = Some(Tile::Num(-1));
+    context.copyfromp(3);
+    assert_eq!(context.hand, Some(Tile::Num(-1)));
+}
+
+#[test]
+fn test_copytop() {
+    let mut context = Context::new(&[], 6);
+    context.memory[3] = Some(Tile::Num(0));
+    context.hand = Some(Tile::Num(-1));
+    context.copytop(3);
+    assert_eq!(context.memory[0], Some(Tile::Num(-1)));
+}
+
+#[test]
+fn test_addp() {
+    let mut context = Context::new(&[], 6);
+    context.memory[3] = Some(Tile::Num(0));
+    context.memory[0] = Some(Tile::Num(-3));
+    context.hand = Some(Tile::Num(-1));
+    context.addp(3);
+    assert_eq!(context.hand, Some(Tile::Num(-4)));
+}
+
+#[test]
+fn test_subp() {
+    let mut context = Context::new(&[], 6);
+    context.memory[3] = Some(Tile::Num(0));
+    context.memory[0] = Some(Tile::Num(-3));
+    context.hand = Some(Tile::Num(-1));
+    context.subp(3);
+    assert_eq!(context.hand, Some(Tile::Num(2)));
 }

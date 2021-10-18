@@ -10,6 +10,12 @@ pub enum Expression<'a> {
     Sub(usize),
     Incr(usize),
     Decr(usize),
+    CopyFromPointer(usize),
+    CopyToPointer(usize),
+    AddPointer(usize),
+    SubPointer(usize),
+    IncrPointer(usize),
+    DecrPointer(usize),
     Label(&'a str),
     Jump(&'a str),
     JumpIfZero(&'a str),
@@ -21,7 +27,8 @@ impl<'a> Expression<'a>  {
         match *self {
             Expression::Inbox =>{
                 runner.context.inbox();
-                runner.context.hand.is_none()
+                let hand = runner.context.hand.as_ref();
+                hand.is_none()
             },
             Expression::Outbox => { runner.context.outbox(); false },
             Expression::CopyFrom(s) => { runner.context.copyfrom(s); false },
@@ -30,16 +37,26 @@ impl<'a> Expression<'a>  {
             Expression::Decr(s) => { runner.context.decr(s); false },
             Expression::Add(s) => { runner.context.add(s); false },
             Expression::Sub(s) => { runner.context.sub(s); false },
+            Expression::CopyFromPointer(s) => { runner.context.copyfromp(s); false },
+            Expression::CopyToPointer(s) => { runner.context.copytop(s); false },
+            Expression::IncrPointer(s) => { runner.context.incrp(s); false },
+            Expression::DecrPointer(s) => { runner.context.decrp(s); false },
+            Expression::AddPointer(s) => { runner.context.addp(s); false },
+            Expression::SubPointer(s) => { runner.context.subp(s); false },
             Expression::Label(_) => { false },
             Expression::Jump(s) => { runner.jump(s); false },
             Expression::JumpIfZero(s) => {
-                if runner.context.hand.clone().expect("jump if with empty hands").num() == 0 {
+                let hand = runner.context.hand.as_ref();
+                let tile = hand.clone().expect("jump if with empty hands");
+                if tile.is_num() && tile.num() == 0 {
                     runner.jump(s);
                 }
                 false
             }
             Expression::JumpIfNegative(s) => {
-                if runner.context.hand.clone().expect("jump if with empty hands").num() < 0 {
+                let hand = runner.context.hand.as_ref();
+                let tile = hand.clone().expect("jump if with empty hands");
+                if tile.is_num() && tile.num() < 0 {
                     runner.jump(s);
                 }
                 false
@@ -49,9 +66,9 @@ impl<'a> Expression<'a>  {
 }
 
 pub struct Runner<'a> {
-    statements: Vec<Expression<'a>>,
-    context: Context,
-    pos: usize,
+    pub statements: Vec<Expression<'a>>,
+    pub context: Context,
+    pub pos: usize,
 }
 
 impl<'a> Runner<'a> {
