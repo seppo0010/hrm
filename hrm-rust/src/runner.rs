@@ -79,14 +79,26 @@ impl<'a> Runner<'a> {
         }).expect("Jump to unexisting label");
     }
 
-    pub fn run(mut self) -> Vec<Tile> {
+    fn do_run(mut self, debug: bool) -> Vec<Tile> {
         while self.pos < self.statements.len() {
+            if debug {
+                // TODO: use log lib
+                println!("running statement {:?}, hand has: {:?}", self.statements[self.pos], self.context.hand);
+            }
             if self.statements[self.pos].clone().run(&mut self) {
                 break
             }
             self.pos += 1;
         }
         self.context.outbox_line
+    }
+
+    pub fn run_debug(self) -> Vec<Tile> {
+        self.do_run(true)
+    }
+
+    pub fn run(self) -> Vec<Tile> {
+        self.do_run(false)
     }
 }
 
